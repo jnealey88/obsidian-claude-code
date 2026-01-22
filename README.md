@@ -93,9 +93,23 @@ Skills are specialized modes that give Claude specific instructions for certain 
 
 Skills live in your vault at `.claude/skills/` (configurable in settings).
 
-### Quick Example
+### Using the Built-in Skill Creator (Recommended)
 
-Create a folder `.claude/skills/daily-note/` with a `SKILL.md` file:
+The easiest way to create a new skill:
+
+1. Select **Skill Creator** from the **Mode** dropdown
+2. Describe what you want the skill to do, e.g.:
+   - "Create a skill for processing meeting notes that extracts action items"
+   - "I need a skill for writing blog posts with SEO optimization"
+3. Claude will create the skill folder and SKILL.md file for you
+4. Restart Obsidian to see your new skill in the Mode dropdown
+
+### Manual Creation
+
+You can also create skills manually:
+
+1. Create a folder in `.claude/skills/` (e.g., `.claude/skills/daily-note/`)
+1. Add a `SKILL.md` file with YAML frontmatter:
 
 ```markdown
 ---
@@ -114,7 +128,7 @@ Create daily notes with this structure:
 Always save to the Journal/ folder with filename YYYY-MM-DD.md
 ```
 
-After creating, restart Obsidian and your skill appears in the Mode dropdown.
+1. Restart Obsidian - your skill appears in the Mode dropdown
 
 ### Skill Structure
 
@@ -196,7 +210,7 @@ A: Click the **Stop** button that appears while Claude is responding.
 ## Support
 
 - [Claude Code Documentation](https://docs.anthropic.com/en/docs/claude-code)
-- [Report Issues](https://github.com/your-repo/obsidian-claude-code/issues)
+- [Report Issues](https://github.com/jnealey88/obsidian-claude-code/issues)
 
 ---
 
