@@ -3,7 +3,9 @@
   "name": "Claude Code",
   "version": "1.0.0",
   "minAppVersion": "1.4.0",
-  "description": "Chat with Claude Code CLI directly in your notes",
+  "description": "An AI assistant that lives in your vault. Chat with Claude and let it read, write, and edit your notes directly.",
   "author": "Nealey",
+  "authorUrl": "https://github.com/jnealey88",
+  "fundingUrl": "https://github.com/sponsors/jnealey88",
   "isDesktopOnly": true
 }
