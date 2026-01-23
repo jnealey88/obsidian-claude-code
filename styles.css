@@ -203,6 +203,8 @@
   flex: 1;
   overflow-y: auto;
   padding: 12px;
+  user-select: text;
+  -webkit-user-select: text;
 }
 
 .claude-message {
@@ -229,6 +231,9 @@
   word-wrap: break-word;
   font-size: 0.9em;
   line-height: 1.4;
+  user-select: text;
+  -webkit-user-select: text;
+  cursor: text;
 }
 
 .claude-message-content p {
@@ -369,6 +374,8 @@
   max-height: 150px;
   overflow-y: auto;
   border: 1px solid var(--background-modifier-border);
+  user-select: text;
+  -webkit-user-select: text;
 }
 
 /* Tool completion states */
@@ -552,6 +559,8 @@
   overflow-y: auto;
   background: var(--background-secondary);
   border-radius: 4px;
+  user-select: text;
+  -webkit-user-select: text;
 }
 
 /* Input area */
@@ -707,6 +716,12 @@
 .claude-inline-assistant {
   background: var(--background-primary-alt);
   margin-right: 20%;
+}
+
+.claude-inline-content {
+  user-select: text;
+  -webkit-user-select: text;
+  cursor: text;
 }
 
 .claude-inline-content p:last-child {
