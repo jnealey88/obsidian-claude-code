@@ -1,7 +1,7 @@
 {
   "id": "ai-cli-chat",
   "name": "AI CLI Chat",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "minAppVersion": "1.4.0",
   "description": "Chat with Claude Code CLI in your vault. Read, write, and edit notes directly.",
   "author": "Nealey",
