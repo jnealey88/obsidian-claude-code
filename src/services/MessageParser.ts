@@ -38,7 +38,7 @@ export class MessageParser {
 
     try {
       const raw = JSON.parse(trimmed) as RawStreamMessage;
-      console.log('[MessageParser] Raw message:', raw.type, raw.subtype || '');
+      console.debug('[MessageParser] Raw message:', raw.type, raw.subtype || '');
       return this.normalizeMessage(raw);
     } catch {
       return null;

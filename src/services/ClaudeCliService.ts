@@ -86,7 +86,7 @@ export class ClaudeCliService {
         vaultPath = this.plugin.app.vault.adapter.getBasePath();
       }
 
-      console.log('[Claude Plugin] Spawning:', claudePath, args);
+      console.debug('[Claude Plugin] Spawning:', claudePath, args);
 
       // Spawn without shell to prevent prompt content being interpreted as commands
       this.activeProcess = spawn(claudePath, args, {
@@ -109,7 +109,7 @@ export class ClaudeCliService {
 
       // Add timeout to prevent hanging
       const timeout = setTimeout(() => {
-        console.log('[Claude Plugin] Process timeout - killing');
+        console.debug('[Claude Plugin] Process timeout - killing');
         if (this.activeProcess) {
           this.activeProcess.kill('SIGTERM');
         }
@@ -131,7 +131,7 @@ export class ClaudeCliService {
             if (parsedMessages) {
               for (const parsed of parsedMessages) {
                 const preview = typeof parsed.content === 'string' ? parsed.content.substring(0, 50) : '';
-                console.log('[Claude Plugin] Parsed message:', parsed.type, parsed.name || '', preview);
+                console.debug('[Claude Plugin] Parsed message:', parsed.type, parsed.name || '', preview);
                 messages.push(parsed);
 
                 // Extract session ID if present
@@ -167,12 +167,12 @@ export class ClaudeCliService {
       let stderrData = '';
       this.activeProcess.stderr?.on('data', (data: Buffer) => {
         stderrData += data.toString();
-        console.log('[Claude Plugin] stderr:', data.toString());
+        console.debug('[Claude Plugin] stderr:', data.toString());
       });
 
       this.activeProcess.on('close', (code) => {
         clearTimeout(timeout);
-        console.log('[Claude Plugin] Process closed with code:', code);
+        console.debug('[Claude Plugin] Process closed with code:', code);
         this.activeProcess = null;
 
         // Process any remaining buffer
@@ -272,11 +272,11 @@ export class ClaudeCliService {
    */
   queueInput(input: string): boolean {
     if (this.isRunning()) {
-      console.log('[Claude Plugin] Queueing input for follow-up:', input.substring(0, 50));
+      console.debug('[Claude Plugin] Queueing input for follow-up:', input.substring(0, 50));
       this.queuedInput = input;
       return true;
     }
-    console.log('[Claude Plugin] Cannot queue input - no active process');
+    console.debug('[Claude Plugin] Cannot queue input - no active process');
     return false;
   }
 

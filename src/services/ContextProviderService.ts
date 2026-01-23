@@ -80,7 +80,7 @@ export class ContextProviderService {
       };
 
       if (typeof webview.getWebContentsId !== 'function') {
-        console.log('[Context Provider] WebView not ready or not an Electron webview');
+        console.debug('[Context Provider] WebView not ready or not an Electron webview');
         return null;
       }
 
@@ -93,12 +93,12 @@ export class ContextProviderService {
         // Dynamic require to avoid build errors if electron is not available
         remote = require('electron').remote;
       } catch {
-        console.log('[Context Provider] Electron remote module not available');
+        console.debug('[Context Provider] Electron remote module not available');
         return null;
       }
 
       if (!remote || !remote.webContents) {
-        console.log('[Context Provider] Electron remote API not available - this feature requires Obsidian desktop');
+        console.debug('[Context Provider] Electron remote API not available - this feature requires Obsidian desktop');
         return null;
       }
 
@@ -146,7 +146,7 @@ export class ContextProviderService {
       };
     } catch (error) {
       // Gracefully handle any errors - web context is optional
-      console.log('[Context Provider] Web viewer context unavailable:', error instanceof Error ? error.message : 'unknown error');
+      console.debug('[Context Provider] Web viewer context unavailable:', error instanceof Error ? error.message : 'unknown error');
       return null;
     }
   }

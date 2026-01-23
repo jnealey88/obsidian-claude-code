@@ -252,7 +252,7 @@ export class SkillLoaderService {
 
       this.skills.push(...folderSkills);
 
-      console.log('[Skill Loader] Loaded', this.skills.length - 1, 'skills (1 built-in +', folderSkills.length, 'from folder)');
+      console.debug('[Skill Loader] Loaded', this.skills.length - 1, 'skills (1 built-in +', folderSkills.length, 'from folder)');
 
       return this.skills;
     } catch (error) {
@@ -272,17 +272,17 @@ export class SkillLoaderService {
       }
 
       if (!vaultPath) {
-        console.log('[Skill Loader] Could not determine vault path');
+        console.debug('[Skill Loader] Could not determine vault path');
         return skills;
       }
 
       const skillsFolder = this.plugin.settings.skillsFolder;
       const skillsFolderPath = path.join(vaultPath, skillsFolder);
 
-      console.log('[Skill Loader] Looking for skills in:', skillsFolderPath);
+      console.debug('[Skill Loader] Looking for skills in:', skillsFolderPath);
 
       if (!fs.existsSync(skillsFolderPath)) {
-        console.log('[Skill Loader] Skills folder does not exist:', skillsFolderPath);
+        console.debug('[Skill Loader] Skills folder does not exist:', skillsFolderPath);
         return skills;
       }
 
@@ -299,7 +299,7 @@ export class SkillLoaderService {
         const skillMdPath = path.join(skillDir, 'SKILL.md');
 
         if (!fs.existsSync(skillMdPath)) {
-          console.log('[Skill Loader] No SKILL.md found in:', skillDir);
+          console.debug('[Skill Loader] No SKILL.md found in:', skillDir);
           continue;
         }
 
@@ -310,7 +310,7 @@ export class SkillLoaderService {
           if (parsed) {
             parsed.skillPath = skillDir;
             skills.push(parsed);
-            console.log('[Skill Loader] Loaded skill:', parsed.id);
+            console.debug('[Skill Loader] Loaded skill:', parsed.id);
           }
         } catch (e) {
           console.error('[Skill Loader] Error parsing skill:', entry.name, e);
@@ -352,7 +352,6 @@ export class SkillLoaderService {
       const lines = content.split('\n').filter(line => line.trim());
 
       // Skip frontmatter if present
-      let startIdx = 0;
       if (frontmatterMatch) {
         const afterFrontmatter = content.indexOf('---', 4);
         if (afterFrontmatter > 0) {
@@ -395,13 +394,13 @@ export class SkillLoaderService {
     // If still no description, use a generic one based on the name
     if (!description) {
       description = `${this.formatSkillName(name)} skill`;
-      console.log('[Skill Loader] Using fallback description for:', name);
+      console.debug('[Skill Loader] Using fallback description for:', name);
     }
 
     // Get icon
     const icon = DEFAULT_ICONS[name] || '⚡';
 
-    console.log('[Skill Loader] Parsed skill:', name, '-', description.substring(0, 50));
+    console.debug('[Skill Loader] Parsed skill:', name, '-', description.substring(0, 50));
 
     return {
       id: name,

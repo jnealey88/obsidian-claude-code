@@ -34,15 +34,15 @@ export default class ClaudeCodePlugin extends Plugin {
     registerInlineBlockProcessor(this);
 
     // Add ribbon icon
-    this.addRibbonIcon('message-circle', 'Open Claude Chat', () => {
-      this.activateChatPanel();
+    this.addRibbonIcon('message-circle', 'Open Claude chat', () => {
+      void this.activateChatPanel();
     });
 
     // Add commands
     this.addCommand({
       id: 'open-claude-chat',
-      name: 'Open Claude Chat Panel',
-      callback: () => this.activateChatPanel(),
+      name: 'Open Claude chat panel',
+      callback: () => void this.activateChatPanel(),
     });
 
     this.addCommand({
@@ -51,7 +51,7 @@ export default class ClaudeCodePlugin extends Plugin {
       editorCallback: (editor) => {
         const selection = editor.getSelection();
         if (selection) {
-          this.activateChatPanel(selection);
+          void this.activateChatPanel(selection);
         }
       },
     });
@@ -61,7 +61,7 @@ export default class ClaudeCodePlugin extends Plugin {
       id: 'confluence-push',
       name: 'Confluence: Push to Confluence',
       callback: () => {
-        this.activateChatPanel('/confluence push');
+        void this.activateChatPanel('/confluence push');
       },
     });
 
@@ -69,7 +69,7 @@ export default class ClaudeCodePlugin extends Plugin {
       id: 'confluence-pull',
       name: 'Confluence: Pull from Confluence',
       callback: () => {
-        this.activateChatPanel('/confluence pull');
+        void this.activateChatPanel('/confluence pull');
       },
     });
 
@@ -77,7 +77,7 @@ export default class ClaudeCodePlugin extends Plugin {
       id: 'confluence-status',
       name: 'Confluence: Check sync status',
       callback: () => {
-        this.activateChatPanel('/confluence status');
+        void this.activateChatPanel('/confluence status');
       },
     });
 
@@ -85,7 +85,7 @@ export default class ClaudeCodePlugin extends Plugin {
       id: 'confluence-list',
       name: 'Confluence: List all synced files',
       callback: () => {
-        this.activateChatPanel('/confluence list');
+        void this.activateChatPanel('/confluence list');
       },
     });
 
@@ -94,12 +94,12 @@ export default class ClaudeCodePlugin extends Plugin {
 
     // Open chat panel in right sidebar on startup
     this.app.workspace.onLayoutReady(() => {
-      this.activateChatPanel();
+      void this.activateChatPanel();
     });
   }
 
-  async onunload() {
-    await this.sessionManager.saveAllSessions();
+  onunload(): void {
+    void this.sessionManager.saveAllSessions();
   }
 
   async loadSettings() {
@@ -126,7 +126,7 @@ export default class ClaudeCodePlugin extends Plugin {
       });
     }
 
-    workspace.revealLeaf(leaf);
+    void workspace.revealLeaf(leaf);
 
     if (initialPrompt) {
       const view = leaf.view as ChatPanelView;

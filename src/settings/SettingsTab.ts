@@ -52,7 +52,7 @@ function isValidCliPath(path: string): { valid: boolean; reason?: string } {
   // Path should be a simple name (in PATH) or an absolute/relative path
   // Simple names: "claude", "claude-code"
   // Paths: "/usr/local/bin/claude", "./claude", "~/bin/claude"
-  const validPathPattern = /^[a-zA-Z0-9_.~\/-]+$/;
+  const validPathPattern = /^[a-zA-Z0-9_.~/-]+$/;
   if (!validPathPattern.test(trimmed)) {
     return { valid: false, reason: 'Path contains invalid characters' };
   }
@@ -72,16 +72,16 @@ export class ClaudeCodeSettingsTab extends PluginSettingTab {
     const { containerEl } = this;
     containerEl.empty();
 
-    containerEl.createEl('h2', { text: 'Claude Code Settings' });
+    new Setting(containerEl).setName('Claude Code settings').setHeading();
 
     // Connection Status
-    this.renderConnectionStatus(containerEl);
+    void this.renderConnectionStatus(containerEl);
 
     // CLI Configuration
-    containerEl.createEl('h3', { text: 'CLI Configuration' });
+    new Setting(containerEl).setName('CLI configuration').setHeading();
 
     new Setting(containerEl)
-      .setName('Claude CLI Path')
+      .setName('Claude CLI path')
       .setDesc('Path to the Claude CLI executable. Leave as "claude" to use PATH, or specify full path.')
       .addText((text) =>
         text
@@ -115,7 +115,7 @@ export class ClaudeCodeSettingsTab extends PluginSettingTab {
       );
 
     new Setting(containerEl)
-      .setName('Default Allowed Tools')
+      .setName('Default allowed tools')
       .setDesc('Comma-separated list of tools to auto-approve')
       .addText((text) =>
         text
@@ -131,7 +131,7 @@ export class ClaudeCodeSettingsTab extends PluginSettingTab {
       );
 
     new Setting(containerEl)
-      .setName('Max Turns')
+      .setName('Max turns')
       .setDesc('Maximum agentic turns per request')
       .addSlider((slider) =>
         slider
@@ -145,10 +145,10 @@ export class ClaudeCodeSettingsTab extends PluginSettingTab {
       );
 
     // Skills Configuration
-    containerEl.createEl('h3', { text: 'Skills Configuration' });
+    new Setting(containerEl).setName('Skills configuration').setHeading();
 
     new Setting(containerEl)
-      .setName('Skills Folder')
+      .setName('Skills folder')
       .setDesc('Path to folder containing custom skills (relative to vault root). Each skill should be a folder with a SKILL.md file.')
       .addText((text) =>
         text
@@ -162,21 +162,18 @@ export class ClaudeCodeSettingsTab extends PluginSettingTab {
           })
       );
 
-    const skillsInfo = containerEl.createDiv('setting-item-description');
-    skillsInfo.style.marginTop = '-10px';
-    skillsInfo.style.marginBottom = '15px';
-    skillsInfo.innerHTML = `
-      <small>
-        <strong>Tip:</strong> Use the built-in <code>/skill-creator</code> command to create new skills.
-        Skills extend Claude's capabilities with specialized workflows and knowledge.
-      </small>
-    `;
+    const skillsInfo = containerEl.createDiv({ cls: 'setting-item-description claude-skills-tip' });
+    const tipSmall = skillsInfo.createEl('small');
+    tipSmall.createEl('strong', { text: 'Tip: ' });
+    tipSmall.appendText('Use the built-in ');
+    tipSmall.createEl('code', { text: '/skill-creator' });
+    tipSmall.appendText(' command to create new skills. Skills extend Claude\'s capabilities with specialized workflows and knowledge.');
 
     // Context Settings
-    containerEl.createEl('h3', { text: 'Context Settings' });
+    new Setting(containerEl).setName('Context settings').setHeading();
 
     new Setting(containerEl)
-      .setName('Include Current Note')
+      .setName('Include current note')
       .setDesc('Automatically include the active note as context')
       .addToggle((toggle) =>
         toggle.setValue(this.plugin.settings.includeCurrentNote).onChange(async (value) => {
@@ -186,7 +183,7 @@ export class ClaudeCodeSettingsTab extends PluginSettingTab {
       );
 
     new Setting(containerEl)
-      .setName('Max Context Files')
+      .setName('Max context files')
       .setDesc('Maximum number of files to include as context')
       .addSlider((slider) =>
         slider
@@ -200,7 +197,7 @@ export class ClaudeCodeSettingsTab extends PluginSettingTab {
       );
 
     new Setting(containerEl)
-      .setName('Max Context Length')
+      .setName('Max context length')
       .setDesc('Maximum total characters for context')
       .addText((text) =>
         text.setValue(this.plugin.settings.maxContextLength.toString()).onChange(async (value) => {
@@ -213,7 +210,7 @@ export class ClaudeCodeSettingsTab extends PluginSettingTab {
       );
 
     new Setting(containerEl)
-      .setName('Excluded Folders')
+      .setName('Excluded folders')
       .setDesc('Comma-separated list of folders to exclude from context')
       .addText((text) =>
         text
@@ -229,10 +226,10 @@ export class ClaudeCodeSettingsTab extends PluginSettingTab {
       );
 
     // UI Preferences
-    containerEl.createEl('h3', { text: 'UI Preferences' });
+    new Setting(containerEl).setName('UI preferences').setHeading();
 
     new Setting(containerEl)
-      .setName('Show Tool Calls')
+      .setName('Show tool calls')
       .setDesc('Display tool usage in the chat interface')
       .addToggle((toggle) =>
         toggle.setValue(this.plugin.settings.showToolCalls).onChange(async (value) => {
@@ -242,7 +239,7 @@ export class ClaudeCodeSettingsTab extends PluginSettingTab {
       );
 
     new Setting(containerEl)
-      .setName('Stream Responses')
+      .setName('Stream responses')
       .setDesc('Show responses as they stream in')
       .addToggle((toggle) =>
         toggle.setValue(this.plugin.settings.streamResponses).onChange(async (value) => {
@@ -252,7 +249,7 @@ export class ClaudeCodeSettingsTab extends PluginSettingTab {
       );
 
     new Setting(containerEl)
-      .setName('Default Panel Position')
+      .setName('Default panel position')
       .setDesc('Where to open the chat panel')
       .addDropdown((dropdown) =>
         dropdown
@@ -266,10 +263,10 @@ export class ClaudeCodeSettingsTab extends PluginSettingTab {
       );
 
     // Session Management
-    containerEl.createEl('h3', { text: 'Session Management' });
+    new Setting(containerEl).setName('Session management').setHeading();
 
     new Setting(containerEl)
-      .setName('Auto-save Sessions')
+      .setName('Auto-save sessions')
       .setDesc('Automatically save conversations')
       .addToggle((toggle) =>
         toggle.setValue(this.plugin.settings.autoSaveSessions).onChange(async (value) => {
@@ -279,7 +276,7 @@ export class ClaudeCodeSettingsTab extends PluginSettingTab {
       );
 
     new Setting(containerEl)
-      .setName('Session Storage Path')
+      .setName('Session storage path')
       .setDesc('Folder path for storing session files')
       .addText((text) =>
         text
@@ -292,7 +289,7 @@ export class ClaudeCodeSettingsTab extends PluginSettingTab {
       );
 
     new Setting(containerEl)
-      .setName('Max Session History')
+      .setName('Max session history')
       .setDesc('Number of sessions to retain')
       .addSlider((slider) =>
         slider
@@ -307,12 +304,10 @@ export class ClaudeCodeSettingsTab extends PluginSettingTab {
   }
 
   private async renderConnectionStatus(containerEl: HTMLElement): Promise<void> {
-    const statusContainer = containerEl.createDiv('claude-connection-status');
-    statusContainer.style.cssText = 'padding: 15px; margin-bottom: 20px; border-radius: 8px; border: 1px solid var(--background-modifier-border);';
+    const statusContainer = containerEl.createDiv({ cls: 'claude-connection-status' });
 
     const statusText = statusContainer.createDiv();
-    const loadingSpan = statusText.createSpan();
-    loadingSpan.style.opacity = '0.7';
+    const loadingSpan = statusText.createSpan({ cls: 'claude-status-loading' });
     loadingSpan.textContent = 'Checking Claude CLI connection...';
 
     // Check connection status asynchronously
@@ -321,84 +316,64 @@ export class ClaudeCodeSettingsTab extends PluginSettingTab {
     statusContainer.empty();
 
     if (isConnected) {
-      statusContainer.style.borderColor = 'var(--color-green)';
-      statusContainer.style.backgroundColor = 'rgba(0, 200, 0, 0.1)';
+      statusContainer.addClass('connected');
 
-      const wrapper = statusContainer.createDiv();
-      wrapper.style.cssText = 'display: flex; align-items: center; gap: 10px;';
+      const wrapper = statusContainer.createDiv({ cls: 'claude-status-wrapper' });
 
-      const icon = wrapper.createSpan();
-      icon.style.fontSize = '1.5em';
+      const icon = wrapper.createSpan({ cls: 'claude-status-icon' });
       icon.textContent = '✅';
 
       const infoDiv = wrapper.createDiv();
-      infoDiv.createEl('strong', { text: 'Claude CLI Connected' });
-      const pathDiv = infoDiv.createDiv();
-      pathDiv.style.cssText = 'opacity: 0.8; font-size: 0.9em;';
+      infoDiv.createEl('strong', { text: 'Claude CLI connected' });
+      const pathDiv = infoDiv.createDiv({ cls: 'claude-status-path' });
       pathDiv.textContent = `Path: ${this.plugin.settings.claudePath}`;
     } else {
-      statusContainer.style.borderColor = 'var(--color-orange)';
-      statusContainer.style.backgroundColor = 'rgba(255, 165, 0, 0.1)';
+      statusContainer.addClass('disconnected');
 
-      const contentDiv = statusContainer.createDiv();
-      contentDiv.style.cssText = 'display: flex; flex-direction: column; gap: 12px;';
+      const contentDiv = statusContainer.createDiv({ cls: 'claude-setup-content' });
 
       // Header row
-      const headerRow = contentDiv.createDiv();
-      headerRow.style.cssText = 'display: flex; align-items: center; gap: 10px;';
-      const warnIcon = headerRow.createSpan();
-      warnIcon.style.fontSize = '1.5em';
+      const headerRow = contentDiv.createDiv({ cls: 'claude-setup-header' });
+      const warnIcon = headerRow.createSpan({ cls: 'claude-status-icon' });
       warnIcon.textContent = '⚠️';
       const headerInfo = headerRow.createDiv();
-      headerInfo.createEl('strong', { text: 'Setup Required' });
-      const subText = headerInfo.createDiv();
-      subText.style.cssText = 'opacity: 0.8; font-size: 0.9em;';
+      headerInfo.createEl('strong', { text: 'Setup required' });
+      const subText = headerInfo.createDiv({ cls: 'claude-setup-subtext' });
       subText.textContent = 'Claude Code CLI needs to be installed';
 
       // Setup steps
-      const stepsBox = contentDiv.createDiv();
-      stepsBox.style.cssText = 'background: var(--background-primary); padding: 12px; border-radius: 6px; font-size: 0.9em;';
-      stepsBox.createEl('strong', { text: 'Setup Steps:' });
+      const stepsBox = contentDiv.createDiv({ cls: 'claude-setup-steps' });
+      stepsBox.createEl('strong', { text: 'Setup steps:' });
 
       const stepsList = stepsBox.createEl('ol');
-      stepsList.style.cssText = 'margin: 8px 0 0 0; padding-left: 20px;';
 
       const step1 = stepsList.createEl('li');
-      step1.style.marginBottom = '6px';
       step1.appendText('Install ');
-      const nodeLink = step1.createEl('a', { text: 'Node.js', href: 'https://nodejs.org' });
-      nodeLink.style.color = 'var(--text-accent)';
+      const nodeLink = step1.createEl('a', { text: 'Node.js', href: 'https://nodejs.org', cls: 'claude-setup-link' });
       step1.appendText(' (if not already installed)');
 
       const step2 = stepsList.createEl('li');
-      step2.style.marginBottom = '6px';
       step2.appendText('Open Terminal and run:');
       step2.createEl('br');
-      const code1 = step2.createEl('code', { text: 'npm install -g @anthropic-ai/claude-code' });
-      code1.style.cssText = 'background: var(--background-secondary); padding: 2px 6px; border-radius: 3px;';
+      step2.createEl('code', { text: 'npm install -g @anthropic-ai/claude-code', cls: 'claude-setup-code' });
 
       const step3 = stepsList.createEl('li');
-      step3.style.marginBottom = '6px';
       step3.appendText('Run ');
-      const code2 = step3.createEl('code', { text: 'claude' });
-      code2.style.cssText = 'background: var(--background-secondary); padding: 2px 6px; border-radius: 3px;';
+      step3.createEl('code', { text: 'claude', cls: 'claude-setup-code' });
       step3.appendText(' to authenticate with your Anthropic account');
 
       const step4 = stepsList.createEl('li');
       step4.textContent = 'Click "Auto-detect" below or restart Obsidian';
 
       // Add helpful buttons
-      const buttonRow = contentDiv.createDiv();
-      buttonRow.style.cssText = 'display: flex; gap: 8px; flex-wrap: wrap;';
+      const buttonRow = contentDiv.createDiv({ cls: 'claude-setup-buttons' });
 
-      const docsBtn = buttonRow.createEl('button', { text: '📖 Installation Guide', cls: 'mod-cta' });
-      docsBtn.style.cssText = 'font-size: 0.85em;';
+      const docsBtn = buttonRow.createEl('button', { text: '📖 Installation guide', cls: 'mod-cta claude-setup-btn' });
       docsBtn.addEventListener('click', () => {
         window.open('https://docs.anthropic.com/en/docs/claude-code', '_blank');
       });
 
-      const checkBtn = buttonRow.createEl('button', { text: '🔄 Check Again' });
-      checkBtn.style.cssText = 'font-size: 0.85em;';
+      const checkBtn = buttonRow.createEl('button', { text: '🔄 Check again', cls: 'claude-setup-btn' });
       checkBtn.addEventListener('click', () => {
         this.display();
       });

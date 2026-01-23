@@ -784,3 +784,99 @@
 .claude-queued-icon {
   font-size: 0.9em;
 }
+
+/* Skills tip in settings */
+.claude-skills-tip {
+  margin-top: -10px;
+  margin-bottom: 15px;
+}
+
+/* Connection status in settings */
+.claude-connection-status {
+  padding: 15px;
+  margin-bottom: 20px;
+  border-radius: 8px;
+  border: 1px solid var(--background-modifier-border);
+}
+
+.claude-connection-status.connected {
+  border-color: var(--color-green);
+  background-color: rgba(0, 200, 0, 0.1);
+}
+
+.claude-connection-status.disconnected {
+  border-color: var(--color-orange);
+  background-color: rgba(255, 165, 0, 0.1);
+}
+
+.claude-status-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.claude-status-icon {
+  font-size: 1.5em;
+}
+
+.claude-status-loading {
+  opacity: 0.7;
+}
+
+.claude-status-path {
+  opacity: 0.8;
+  font-size: 0.9em;
+}
+
+.claude-setup-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.claude-setup-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.claude-setup-subtext {
+  opacity: 0.8;
+  font-size: 0.9em;
+}
+
+.claude-setup-steps {
+  background: var(--background-primary);
+  padding: 12px;
+  border-radius: 6px;
+  font-size: 0.9em;
+}
+
+.claude-setup-steps ol {
+  margin: 8px 0 0 0;
+  padding-left: 20px;
+}
+
+.claude-setup-steps li {
+  margin-bottom: 6px;
+}
+
+.claude-setup-code {
+  background: var(--background-secondary);
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+
+.claude-setup-link {
+  color: var(--text-accent);
+}
+
+.claude-setup-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.claude-setup-btn {
+  font-size: 0.85em;
+}

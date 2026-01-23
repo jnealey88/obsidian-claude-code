@@ -1,4 +1,4 @@
-import { MarkdownPostProcessorContext, MarkdownRenderer } from 'obsidian';
+import { MarkdownPostProcessorContext, MarkdownRenderer, TFile } from 'obsidian';
 import type ClaudeCodePlugin from '../main';
 import { ChatMessage } from '../types';
 
@@ -72,7 +72,7 @@ class InlineChatBlock {
     this.el.addClass('claude-inline-chat');
 
     const header = this.el.createDiv('claude-inline-header');
-    header.createSpan({ text: 'Claude Chat', cls: 'claude-inline-title' });
+    header.createSpan({ text: 'Claude chat', cls: 'claude-inline-title' });
 
     this.messagesEl = this.el.createDiv('claude-inline-messages');
     this.renderMessages();
@@ -104,7 +104,7 @@ class InlineChatBlock {
       text: 'Send',
       cls: 'claude-btn claude-btn-small',
     });
-    sendBtn.addEventListener('click', () => this.sendMessage());
+    sendBtn.addEventListener('click', () => void this.sendMessage());
   }
 
   private renderMessages(): void {
@@ -151,8 +151,8 @@ class InlineChatBlock {
       const file = this.plugin.app.vault.getAbstractFileByPath(filePath);
       let contextPrompt = '';
 
-      if (file) {
-        const content = await this.plugin.app.vault.cachedRead(file as any);
+      if (file instanceof TFile) {
+        const content = await this.plugin.app.vault.cachedRead(file);
         contextPrompt = `Current note (${filePath}):\n${content}\n\n`;
       }
 
@@ -190,9 +190,9 @@ class InlineChatBlock {
 
   private async persistState(): Promise<void> {
     const file = this.plugin.app.vault.getAbstractFileByPath(this.ctx.sourcePath);
-    if (!file) return;
+    if (!(file instanceof TFile)) return;
 
-    const content = await this.plugin.app.vault.read(file as any);
+    const content = await this.plugin.app.vault.read(file);
     const newBlockContent = JSON.stringify(
       {
         sessionId: this.state.sessionId,
@@ -206,6 +206,6 @@ class InlineChatBlock {
     const blockRegex = /```claude-chat\n[\s\S]*?\n```/;
     const newContent = content.replace(blockRegex, `\`\`\`claude-chat\n${newBlockContent}\n\`\`\``);
 
-    await this.plugin.app.vault.modify(file as any, newContent);
+    await this.plugin.app.vault.modify(file, newContent);
   }
 }

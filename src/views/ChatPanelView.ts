@@ -1,7 +1,6 @@
-import { ItemView, WorkspaceLeaf, MarkdownRenderer } from 'obsidian';
+import { ItemView, WorkspaceLeaf, MarkdownRenderer, setIcon } from 'obsidian';
 import type ClaudeCodePlugin from '../main';
-import { ChatMessage, ClaudeStreamMessage, getToolInfo, ToolInfo } from '../types';
-import { SkillOption } from '../services/SkillLoaderService';
+import { ChatMessage, ClaudeStreamMessage, getToolInfo } from '../types';
 
 // Track active tool calls for UI state
 interface ActiveToolCall {
@@ -43,7 +42,7 @@ export class ChatPanelView extends ItemView {
   }
 
   getDisplayText(): string {
-    return 'Claude Chat';
+    return 'Claude chat';
   }
 
   getIcon(): string {
@@ -62,7 +61,7 @@ export class ChatPanelView extends ItemView {
     this.messagesEl = this.mainContentEl.createDiv('claude-messages');
     this.createInputArea(this.mainContentEl);
     this.setupEventListeners();
-    await this.initializeSession();
+    this.initializeSession();
   }
 
   private createHeader(container: HTMLElement): void {
@@ -73,10 +72,10 @@ export class ChatPanelView extends ItemView {
       cls: 'claude-btn claude-btn-icon',
       attr: { 'aria-label': 'Chat history' },
     });
-    historyBtn.innerHTML = '☰';
+    setIcon(historyBtn, 'menu');
     historyBtn.addEventListener('click', () => this.toggleHistory());
 
-    leftControls.createEl('span', { text: 'Claude Chat', cls: 'claude-header-title' });
+    leftControls.createEl('span', { text: 'Claude chat', cls: 'claude-header-title' });
 
     // Message count indicator
     this.msgCountEl = leftControls.createEl('span', { cls: 'claude-msg-count' });
@@ -123,13 +122,13 @@ export class ChatPanelView extends ItemView {
     this.historyPanelEl.empty();
 
     const header = this.historyPanelEl.createDiv('claude-history-header');
-    header.createEl('span', { text: 'Chat History', cls: 'claude-history-title' });
+    header.createEl('span', { text: 'Chat history', cls: 'claude-history-title' });
 
     const listEl = this.historyPanelEl.createDiv('claude-history-list');
     const sessions = this.plugin.sessionManager.getAllSessions();
 
     if (sessions.length === 0) {
-      listEl.createDiv({ text: 'No previous chats', cls: 'claude-history-empty' });
+      listEl.createDiv({ text: 'No previous chats.', cls: 'claude-history-empty' });
       return;
     }
 
@@ -164,16 +163,16 @@ export class ChatPanelView extends ItemView {
         cls: 'claude-history-delete',
         attr: { 'aria-label': 'Delete chat' },
       });
-      deleteBtn.innerHTML = '×';
+      setIcon(deleteBtn, 'x');
       deleteBtn.addEventListener('click', (e) => {
         e.stopPropagation();
-        this.deleteSession(session.id);
+        void this.deleteSession(session.id);
       });
     });
   }
 
-  private deleteSession(sessionId: string): void {
-    this.plugin.sessionManager.deleteSession(sessionId);
+  private async deleteSession(sessionId: string): Promise<void> {
+    await this.plugin.sessionManager.deleteSession(sessionId);
     if (sessionId === this.currentSessionId) {
       this.startNewSession();
     }
@@ -261,7 +260,7 @@ export class ChatPanelView extends ItemView {
     });
   }
 
-  private async initializeSession(): Promise<void> {
+  private initializeSession(): void {
     // Session manager is already initialized in main.ts
     let session = this.plugin.sessionManager.getActiveSession();
     if (!session) {
@@ -355,13 +354,13 @@ export class ChatPanelView extends ItemView {
 
       const session = this.plugin.sessionManager.getSession(this.currentSessionId!);
 
-      console.log('[Claude Plugin] Executing with lightweight context, file awareness:', this.includeFileContext, 'web context:', this.includeWebContext, 'skill:', this.selectedSkill || 'none');
+      console.debug('[Claude Plugin] Executing with lightweight context, file awareness:', this.includeFileContext, 'web context:', this.includeWebContext, 'skill:', this.selectedSkill || 'none');
       const result = await this.plugin.cliService.execute({
         prompt: contextPrompt + prompt,
         sessionId: session?.claudeSessionId,
         appendSystemPrompt: skillSystemPrompt,
       });
-      console.log('[Claude Plugin] Execution result:', result.success, result.finalContent?.substring(0, 50));
+      console.debug('[Claude Plugin] Execution result:', result.success, result.finalContent?.substring(0, 50));
 
       if (result.sessionId) {
         this.plugin.sessionManager.setClaudeSessionId(this.currentSessionId!, result.sessionId);
@@ -453,12 +452,12 @@ export class ChatPanelView extends ItemView {
       cls: 'claude-copy-btn',
       attr: { 'aria-label': 'Copy to clipboard' },
     });
-    copyBtn.innerHTML = '📋';
+    setIcon(copyBtn, 'copy');
     copyBtn.addEventListener('click', () => {
-      navigator.clipboard.writeText(this.accumulatedContent).then(() => {
-        copyBtn.innerHTML = '✓';
+      void navigator.clipboard.writeText(this.accumulatedContent).then(() => {
+        setIcon(copyBtn, 'check');
         setTimeout(() => {
-          copyBtn.innerHTML = '📋';
+          setIcon(copyBtn, 'copy');
         }, 2000);
       });
     });
@@ -515,13 +514,13 @@ export class ChatPanelView extends ItemView {
         cls: 'claude-copy-btn',
         attr: { 'aria-label': 'Copy to clipboard' },
       });
-      copyBtn.innerHTML = '📋';
+      setIcon(copyBtn, 'copy');
       copyBtn.addEventListener('click', () => {
         const content = message.content || '';
-        navigator.clipboard.writeText(content).then(() => {
-          copyBtn.innerHTML = '✓';
+        void navigator.clipboard.writeText(content).then(() => {
+          setIcon(copyBtn, 'check');
           setTimeout(() => {
-            copyBtn.innerHTML = '📋';
+            setIcon(copyBtn, 'copy');
           }, 2000);
         });
       });
@@ -546,7 +545,7 @@ export class ChatPanelView extends ItemView {
 
     // Spinner for in-progress state
     const spinnerEl = toolEl.createSpan({ cls: 'claude-tool-spinner' });
-    spinnerEl.innerHTML = '◌';
+    setIcon(spinnerEl, 'loader');
 
     const detailsEl = toolEl.createEl('details', { cls: 'claude-tool-details' });
     const summaryEl = detailsEl.createEl('summary');
@@ -664,9 +663,10 @@ export class ChatPanelView extends ItemView {
         return `${input.pattern || '*'}`;
       case 'Grep':
         return `"${(input.pattern as string)?.substring(0, 30) || '...'}"`;
-      case 'Bash':
+      case 'Bash': {
         const cmd = (input.command as string) || '';
         return cmd.substring(0, 50) + (cmd.length > 50 ? '...' : '');
+      }
       case 'WebFetch':
         try {
           const url = new URL(input.url as string);
@@ -775,14 +775,11 @@ export class ChatPanelView extends ItemView {
       message.includes('length_exceeded');
 
     if (isContextError) {
-      errorEl.innerHTML = `
-        <div class="claude-error-content">
-          <strong>Context limit reached</strong>
-          <p>The conversation has grown too long. Start a new chat to continue.</p>
-        </div>
-      `;
+      const contentDiv = errorEl.createDiv({ cls: 'claude-error-content' });
+      contentDiv.createEl('strong', { text: 'Context limit reached' });
+      contentDiv.createEl('p', { text: 'The conversation has grown too long. Start a new chat to continue.' });
       const newChatBtn = errorEl.createEl('button', {
-        text: 'Start New Chat',
+        text: 'Start new chat',
         cls: 'claude-btn claude-btn-secondary claude-btn-small',
       });
       newChatBtn.addEventListener('click', () => {

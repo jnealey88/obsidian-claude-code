@@ -58,7 +58,7 @@ export class SessionManager {
       // Use adapter.list to get files even if folder was just created
       const exists = await vault.adapter.exists(folderPath);
       if (!exists) {
-        console.log('[SessionManager] Session folder does not exist yet');
+        console.debug('[SessionManager] Session folder does not exist yet');
         return;
       }
 
@@ -76,13 +76,13 @@ export class SessionManager {
             }
 
             this.sessions.set(parsed.id, parsed);
-            console.log('[SessionManager] Loaded session:', parsed.id);
+            console.debug('[SessionManager] Loaded session:', parsed.id);
           } catch (parseError) {
             console.error('[SessionManager] Failed to parse session file:', filePath, parseError);
           }
         }
       }
-      console.log('[SessionManager] Loaded', this.sessions.size, 'sessions');
+      console.debug('[SessionManager] Loaded', this.sessions.size, 'sessions');
     } catch (e) {
       console.error('[SessionManager] Failed to load sessions:', e);
     }
@@ -180,7 +180,7 @@ export class SessionManager {
   }
 
   async deleteSession(id: string): Promise<void> {
-    const { vault } = this.plugin.app;
+    const { vault, fileManager } = this.plugin.app;
     const filePath = `${this.plugin.settings.sessionStoragePath}/${id}.json`;
 
     this.sessions.delete(id);
@@ -188,10 +188,10 @@ export class SessionManager {
     try {
       const file = vault.getAbstractFileByPath(filePath);
       if (file instanceof TFile) {
-        await vault.delete(file);
+        await fileManager.trashFile(file);
       }
     } catch (e) {
-      console.error('Failed to delete session file:', e);
+      console.error('[SessionManager] Failed to delete session file:', e);
     }
   }
 
