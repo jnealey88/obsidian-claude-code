@@ -1,6 +1,6 @@
 {
   "name": "obsidian-claude-code",
-  "version": "1.0.0",
+  "version": "1.0.3",
   "description": "Claude Code CLI integration for Obsidian",
   "main": "main.js",
   "scripts": {
