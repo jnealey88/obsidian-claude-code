@@ -1,4 +1,4 @@
-# Claude Code for Obsidian
+# Claude for Obsidian
 
 An AI assistant that lives in your Obsidian vault. Chat with Claude and let it read, write, and edit your notes directly.
 

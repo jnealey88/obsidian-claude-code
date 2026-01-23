@@ -1,9 +1,9 @@
 {
-  "id": "obsidian-claude-code",
-  "name": "Claude Code",
+  "id": "claude-for-obsidian",
+  "name": "Claude for Obsidian",
   "version": "1.0.0",
   "minAppVersion": "1.4.0",
-  "description": "An AI assistant that lives in your vault. Chat with Claude and let it read, write, and edit your notes directly.",
+  "description": "Chat with Claude AI in your vault. Read, write, and edit notes directly.",
   "author": "Nealey",
   "authorUrl": "https://github.com/jnealey88",
   "fundingUrl": "https://github.com/sponsors/jnealey88",
