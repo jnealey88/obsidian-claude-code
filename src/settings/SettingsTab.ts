@@ -1,9 +1,64 @@
-import { App, PluginSettingTab, Setting, Notice } from 'obsidian';
+import { App, PluginSettingTab, Setting, Notice, Platform } from 'obsidian';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import type ClaudeCodePlugin from '../main';
 
 const execAsync = promisify(exec);
+
+/**
+ * Get platform-appropriate PATH for finding CLI tools
+ */
+function getExtendedPath(): string {
+  const basePath = process.env.PATH || '';
+
+  if (Platform.isMacOS) {
+    return `/opt/homebrew/bin:/usr/local/bin:${basePath}`;
+  } else if (Platform.isLinux) {
+    const home = process.env.HOME || '';
+    return `/usr/local/bin:${home}/.local/bin:${basePath}`;
+  } else if (Platform.isWin) {
+    const appData = process.env.APPDATA || '';
+    const localAppData = process.env.LOCALAPPDATA || '';
+    return `${appData}\\npm;${localAppData}\\npm;${basePath}`;
+  }
+
+  return basePath;
+}
+
+// Patterns that indicate potentially unsafe paths
+const UNSAFE_PATH_PATTERNS = [
+  /[;&|`$(){}[\]<>]/,  // Shell metacharacters
+  /\.\./,              // Directory traversal
+  /^https?:/i,         // URLs
+];
+
+/**
+ * Validates that a path looks like a safe CLI executable path
+ */
+function isValidCliPath(path: string): { valid: boolean; reason?: string } {
+  if (!path || path.trim().length === 0) {
+    return { valid: false, reason: 'Path cannot be empty' };
+  }
+
+  const trimmed = path.trim();
+
+  // Check for shell metacharacters that could indicate command injection
+  for (const pattern of UNSAFE_PATH_PATTERNS) {
+    if (pattern.test(trimmed)) {
+      return { valid: false, reason: 'Path contains invalid characters' };
+    }
+  }
+
+  // Path should be a simple name (in PATH) or an absolute/relative path
+  // Simple names: "claude", "claude-code"
+  // Paths: "/usr/local/bin/claude", "./claude", "~/bin/claude"
+  const validPathPattern = /^[a-zA-Z0-9_.~\/-]+$/;
+  if (!validPathPattern.test(trimmed)) {
+    return { valid: false, reason: 'Path contains invalid characters' };
+  }
+
+  return { valid: true };
+}
 
 export class ClaudeCodeSettingsTab extends PluginSettingTab {
   plugin: ClaudeCodePlugin;
@@ -33,7 +88,13 @@ export class ClaudeCodeSettingsTab extends PluginSettingTab {
           .setPlaceholder('claude')
           .setValue(this.plugin.settings.claudePath)
           .onChange(async (value) => {
-            this.plugin.settings.claudePath = value || 'claude';
+            const pathToSet = value || 'claude';
+            const validation = isValidCliPath(pathToSet);
+            if (!validation.valid) {
+              new Notice(`Invalid path: ${validation.reason}`);
+              return;
+            }
+            this.plugin.settings.claudePath = pathToSet;
             await this.plugin.saveSettings();
           })
       )
@@ -250,7 +311,9 @@ export class ClaudeCodeSettingsTab extends PluginSettingTab {
     statusContainer.style.cssText = 'padding: 15px; margin-bottom: 20px; border-radius: 8px; border: 1px solid var(--background-modifier-border);';
 
     const statusText = statusContainer.createDiv();
-    statusText.innerHTML = '<span style="opacity: 0.7;">Checking Claude CLI connection...</span>';
+    const loadingSpan = statusText.createSpan();
+    loadingSpan.style.opacity = '0.7';
+    loadingSpan.textContent = 'Checking Claude CLI connection...';
 
     // Check connection status asynchronously
     const isConnected = await this.checkClaudeConnection();
@@ -260,15 +323,19 @@ export class ClaudeCodeSettingsTab extends PluginSettingTab {
     if (isConnected) {
       statusContainer.style.borderColor = 'var(--color-green)';
       statusContainer.style.backgroundColor = 'rgba(0, 200, 0, 0.1)';
-      statusContainer.innerHTML = `
-        <div style="display: flex; align-items: center; gap: 10px;">
-          <span style="font-size: 1.5em;">✅</span>
-          <div>
-            <strong>Claude CLI Connected</strong>
-            <div style="opacity: 0.8; font-size: 0.9em;">Path: ${this.plugin.settings.claudePath}</div>
-          </div>
-        </div>
-      `;
+
+      const wrapper = statusContainer.createDiv();
+      wrapper.style.cssText = 'display: flex; align-items: center; gap: 10px;';
+
+      const icon = wrapper.createSpan();
+      icon.style.fontSize = '1.5em';
+      icon.textContent = '✅';
+
+      const infoDiv = wrapper.createDiv();
+      infoDiv.createEl('strong', { text: 'Claude CLI Connected' });
+      const pathDiv = infoDiv.createDiv();
+      pathDiv.style.cssText = 'opacity: 0.8; font-size: 0.9em;';
+      pathDiv.textContent = `Path: ${this.plugin.settings.claudePath}`;
     } else {
       statusContainer.style.borderColor = 'var(--color-orange)';
       statusContainer.style.backgroundColor = 'rgba(255, 165, 0, 0.1)';
@@ -276,24 +343,49 @@ export class ClaudeCodeSettingsTab extends PluginSettingTab {
       const contentDiv = statusContainer.createDiv();
       contentDiv.style.cssText = 'display: flex; flex-direction: column; gap: 12px;';
 
-      contentDiv.innerHTML = `
-        <div style="display: flex; align-items: center; gap: 10px;">
-          <span style="font-size: 1.5em;">⚠️</span>
-          <div>
-            <strong>Setup Required</strong>
-            <div style="opacity: 0.8; font-size: 0.9em;">Claude Code CLI needs to be installed</div>
-          </div>
-        </div>
-        <div style="background: var(--background-primary); padding: 12px; border-radius: 6px; font-size: 0.9em;">
-          <strong>Setup Steps:</strong>
-          <ol style="margin: 8px 0 0 0; padding-left: 20px;">
-            <li style="margin-bottom: 6px;">Install <a href="https://nodejs.org" style="color: var(--text-accent);">Node.js</a> (if not already installed)</li>
-            <li style="margin-bottom: 6px;">Open Terminal and run:<br><code style="background: var(--background-secondary); padding: 2px 6px; border-radius: 3px;">npm install -g @anthropic-ai/claude-code</code></li>
-            <li style="margin-bottom: 6px;">Run <code style="background: var(--background-secondary); padding: 2px 6px; border-radius: 3px;">claude</code> to authenticate with your Anthropic account</li>
-            <li>Click "Auto-detect" below or restart Obsidian</li>
-          </ol>
-        </div>
-      `;
+      // Header row
+      const headerRow = contentDiv.createDiv();
+      headerRow.style.cssText = 'display: flex; align-items: center; gap: 10px;';
+      const warnIcon = headerRow.createSpan();
+      warnIcon.style.fontSize = '1.5em';
+      warnIcon.textContent = '⚠️';
+      const headerInfo = headerRow.createDiv();
+      headerInfo.createEl('strong', { text: 'Setup Required' });
+      const subText = headerInfo.createDiv();
+      subText.style.cssText = 'opacity: 0.8; font-size: 0.9em;';
+      subText.textContent = 'Claude Code CLI needs to be installed';
+
+      // Setup steps
+      const stepsBox = contentDiv.createDiv();
+      stepsBox.style.cssText = 'background: var(--background-primary); padding: 12px; border-radius: 6px; font-size: 0.9em;';
+      stepsBox.createEl('strong', { text: 'Setup Steps:' });
+
+      const stepsList = stepsBox.createEl('ol');
+      stepsList.style.cssText = 'margin: 8px 0 0 0; padding-left: 20px;';
+
+      const step1 = stepsList.createEl('li');
+      step1.style.marginBottom = '6px';
+      step1.appendText('Install ');
+      const nodeLink = step1.createEl('a', { text: 'Node.js', href: 'https://nodejs.org' });
+      nodeLink.style.color = 'var(--text-accent)';
+      step1.appendText(' (if not already installed)');
+
+      const step2 = stepsList.createEl('li');
+      step2.style.marginBottom = '6px';
+      step2.appendText('Open Terminal and run:');
+      step2.createEl('br');
+      const code1 = step2.createEl('code', { text: 'npm install -g @anthropic-ai/claude-code' });
+      code1.style.cssText = 'background: var(--background-secondary); padding: 2px 6px; border-radius: 3px;';
+
+      const step3 = stepsList.createEl('li');
+      step3.style.marginBottom = '6px';
+      step3.appendText('Run ');
+      const code2 = step3.createEl('code', { text: 'claude' });
+      code2.style.cssText = 'background: var(--background-secondary); padding: 2px 6px; border-radius: 3px;';
+      step3.appendText(' to authenticate with your Anthropic account');
+
+      const step4 = stepsList.createEl('li');
+      step4.textContent = 'Click "Auto-detect" below or restart Obsidian';
 
       // Add helpful buttons
       const buttonRow = contentDiv.createDiv();
@@ -320,7 +412,7 @@ export class ClaudeCodeSettingsTab extends PluginSettingTab {
         timeout: 5000,
         env: {
           ...process.env,
-          PATH: `/opt/homebrew/bin:/usr/local/bin:${process.env.PATH || ''}`,
+          PATH: getExtendedPath(),
         },
       });
       return stdout.includes('claude') || stdout.length > 0;
@@ -330,24 +422,42 @@ export class ClaudeCodeSettingsTab extends PluginSettingTab {
   }
 
   private async detectClaudePath(): Promise<string | null> {
-    const possiblePaths = [
-      'claude', // In PATH
-      '/opt/homebrew/bin/claude', // macOS Homebrew ARM
-      '/usr/local/bin/claude', // macOS Homebrew Intel / Linux
-      '/usr/bin/claude', // Linux system
-      `${process.env.HOME}/.local/bin/claude`, // pip install --user
-      `${process.env.HOME}/.npm-global/bin/claude`, // npm global
-    ];
+    const possiblePaths: string[] = ['claude']; // Start with PATH lookup
 
-    // Also try `which` command
+    if (Platform.isMacOS) {
+      possiblePaths.push(
+        '/opt/homebrew/bin/claude',  // Homebrew ARM
+        '/usr/local/bin/claude',     // Homebrew Intel
+      );
+    } else if (Platform.isLinux) {
+      const home = process.env.HOME || '';
+      possiblePaths.push(
+        '/usr/local/bin/claude',
+        '/usr/bin/claude',
+        `${home}/.local/bin/claude`,
+        `${home}/.npm-global/bin/claude`,
+      );
+    } else if (Platform.isWin) {
+      const appData = process.env.APPDATA || '';
+      const localAppData = process.env.LOCALAPPDATA || '';
+      possiblePaths.push(
+        `${appData}\\npm\\claude.cmd`,
+        `${localAppData}\\npm\\claude.cmd`,
+        `${appData}\\npm\\claude`,
+        `${localAppData}\\npm\\claude`,
+      );
+    }
+
+    // Try platform-specific path lookup command
     try {
-      const { stdout } = await execAsync('which claude', { timeout: 3000 });
-      const whichPath = stdout.trim();
-      if (whichPath && !possiblePaths.includes(whichPath)) {
-        possiblePaths.unshift(whichPath);
+      const lookupCmd = Platform.isWin ? 'where claude' : 'which claude';
+      const { stdout } = await execAsync(lookupCmd, { timeout: 3000 });
+      const foundPath = stdout.trim().split('\n')[0]; // Take first result on Windows
+      if (foundPath && !possiblePaths.includes(foundPath)) {
+        possiblePaths.unshift(foundPath);
       }
     } catch {
-      // which failed, continue with other paths
+      // Lookup failed, continue with other paths
     }
 
     for (const path of possiblePaths) {
@@ -356,7 +466,7 @@ export class ClaudeCodeSettingsTab extends PluginSettingTab {
           timeout: 3000,
           env: {
             ...process.env,
-            PATH: `/opt/homebrew/bin:/usr/local/bin:${process.env.PATH || ''}`,
+            PATH: getExtendedPath(),
           },
         });
         return path;

@@ -2,6 +2,31 @@ import { TFile } from 'obsidian';
 import type ClaudeCodePlugin from '../main';
 import { ChatSession, ChatMessage } from '../types';
 
+/**
+ * Validates that a parsed object has the required ChatSession structure
+ */
+function isValidSession(obj: unknown): obj is ChatSession {
+  if (!obj || typeof obj !== 'object') return false;
+
+  const session = obj as Record<string, unknown>;
+
+  // Check required fields
+  if (typeof session.id !== 'string' || !session.id) return false;
+  if (!Array.isArray(session.messages)) return false;
+  if (typeof session.createdAt !== 'number') return false;
+  if (typeof session.updatedAt !== 'number') return false;
+
+  // Validate messages array (basic check)
+  for (const msg of session.messages) {
+    if (!msg || typeof msg !== 'object') return false;
+    const message = msg as Record<string, unknown>;
+    if (typeof message.id !== 'string') return false;
+    if (message.role !== 'user' && message.role !== 'assistant') return false;
+  }
+
+  return true;
+}
+
 export class SessionManager {
   private plugin: ClaudeCodePlugin;
   private sessions: Map<string, ChatSession> = new Map();
@@ -42,9 +67,16 @@ export class SessionManager {
         if (filePath.endsWith('.json')) {
           try {
             const content = await vault.adapter.read(filePath);
-            const session = JSON.parse(content) as ChatSession;
-            this.sessions.set(session.id, session);
-            console.log('[SessionManager] Loaded session:', session.id);
+            const parsed = JSON.parse(content);
+
+            // Validate session structure before using
+            if (!isValidSession(parsed)) {
+              console.warn('[SessionManager] Invalid session structure, skipping:', filePath);
+              continue;
+            }
+
+            this.sessions.set(parsed.id, parsed);
+            console.log('[SessionManager] Loaded session:', parsed.id);
           } catch (parseError) {
             console.error('[SessionManager] Failed to parse session file:', filePath, parseError);
           }

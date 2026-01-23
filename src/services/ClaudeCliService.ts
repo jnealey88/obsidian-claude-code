@@ -1,8 +1,31 @@
 import { spawn, ChildProcess } from 'child_process';
-import { FileSystemAdapter } from 'obsidian';
+import { FileSystemAdapter, Platform } from 'obsidian';
 import type ClaudeCodePlugin from '../main';
 import { ClaudeCliOptions, ClaudeStreamMessage, ClaudeExecutionResult } from '../types';
 import { MessageParser } from './MessageParser';
+
+/**
+ * Get platform-appropriate PATH additions for finding CLI tools
+ */
+function getExtendedPath(): string {
+  const basePath = process.env.PATH || '';
+
+  if (Platform.isMacOS) {
+    // macOS: Homebrew paths (ARM and Intel)
+    return `/opt/homebrew/bin:/usr/local/bin:${basePath}`;
+  } else if (Platform.isLinux) {
+    // Linux: common binary locations
+    const home = process.env.HOME || '';
+    return `/usr/local/bin:${home}/.local/bin:${basePath}`;
+  } else if (Platform.isWin) {
+    // Windows: npm global and common locations
+    const appData = process.env.APPDATA || '';
+    const localAppData = process.env.LOCALAPPDATA || '';
+    return `${appData}\\npm;${localAppData}\\npm;${basePath}`;
+  }
+
+  return basePath;
+}
 
 type EventCallback = (data: ClaudeStreamMessage | string) => void;
 
@@ -70,7 +93,7 @@ export class ClaudeCliService {
         cwd: vaultPath || undefined,
         env: {
           ...process.env,
-          PATH: `/opt/homebrew/bin:/usr/local/bin:${process.env.PATH || ''}`,
+          PATH: getExtendedPath(),
           // Disable interactive mode
           CI: 'true',
           TERM: 'dumb',

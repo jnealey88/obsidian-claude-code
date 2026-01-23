@@ -63,31 +63,46 @@ export class ContextProviderService {
       const leaves = this.plugin.app.workspace.getLeavesOfType('webviewer');
       if (leaves.length === 0) return null;
 
-      const view = leaves[0].view as any;
+      const view = leaves[0].view;
+      if (!view || !('contentEl' in view)) return null;
 
-      // Access the webview element - using 'as any' since Electron webview types aren't in standard DOM
-      const webviewEl = view.contentEl?.querySelector('webview') as any;
+      // Access the webview element
+      const viewWithContent = view as { contentEl: HTMLElement };
+      const webviewEl = viewWithContent.contentEl?.querySelector('webview') as HTMLElement | null;
 
       if (!webviewEl) return null;
 
-      // Check if webview is ready before accessing its methods
-      // The webview must be attached to DOM and have fired the dom-ready event
-      if (typeof webviewEl.getWebContentsId !== 'function') {
-        console.log('[Context Provider] WebView not ready yet');
+      // Check if webview has required methods (Electron webview)
+      const webview = webviewEl as HTMLElement & {
+        getWebContentsId?: () => number;
+        getURL?: () => string;
+        getTitle?: () => string;
+      };
+
+      if (typeof webview.getWebContentsId !== 'function') {
+        console.log('[Context Provider] WebView not ready or not an Electron webview');
         return null;
       }
 
-      const url = webviewEl.getURL?.() || '';
-      const title = webviewEl.getTitle?.() || url;
+      const url = webview.getURL?.() || '';
+      const title = webview.getTitle?.() || url;
 
-      // Use Electron's remote API to access web contents
-      const { remote } = require('electron');
-      if (!remote) {
-        console.log('[Context Provider] Electron remote API not available');
+      // Try to access Electron's remote API - may not be available in all Obsidian versions
+      let remote: { webContents: { fromId: (id: number) => { executeJavaScript: (code: string, userGesture: boolean) => Promise<unknown> } | null } } | null = null;
+      try {
+        // Dynamic require to avoid build errors if electron is not available
+        remote = require('electron').remote;
+      } catch {
+        console.log('[Context Provider] Electron remote module not available');
         return null;
       }
 
-      const webContentsId = webviewEl.getWebContentsId();
+      if (!remote || !remote.webContents) {
+        console.log('[Context Provider] Electron remote API not available - this feature requires Obsidian desktop');
+        return null;
+      }
+
+      const webContentsId = webview.getWebContentsId();
       if (!webContentsId) return null;
 
       const webContents = remote.webContents.fromId(webContentsId);
@@ -113,7 +128,7 @@ export class ContextProviderService {
             content: textContent.trim()
           };
         })();
-      `, true);
+      `, true) as { title: string; description: string; content: string } | null;
 
       if (!htmlContent || !htmlContent.content) {
         return null;
@@ -130,7 +145,8 @@ export class ContextProviderService {
         path: url,
       };
     } catch (error) {
-      console.error('[Context Provider] Error extracting web viewer content:', error);
+      // Gracefully handle any errors - web context is optional
+      console.log('[Context Provider] Web viewer context unavailable:', error instanceof Error ? error.message : 'unknown error');
       return null;
     }
   }
