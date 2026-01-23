@@ -42,7 +42,7 @@ export class ChatPanelView extends ItemView {
   }
 
   getDisplayText(): string {
-    return 'Claude chat';
+    return 'AI CLI Chat';
   }
 
   getIcon(): string {
@@ -76,7 +76,7 @@ export class ChatPanelView extends ItemView {
     setIcon(historyBtn, 'menu');
     historyBtn.addEventListener('click', () => this.toggleHistory());
 
-    leftControls.createEl('span', { text: 'Claude chat', cls: 'claude-header-title' });
+    leftControls.createEl('span', { text: 'AI CLI Chat', cls: 'claude-header-title' });
 
     // Message count indicator
     this.msgCountEl = leftControls.createEl('span', { cls: 'claude-msg-count' });
@@ -226,13 +226,13 @@ export class ChatPanelView extends ItemView {
     this.createContextToggle(contextBar);
 
     this.inputEl = inputWrapper.createEl('textarea', {
-      placeholder: 'Ask Claude anything...',
+      placeholder: 'Ask anything...',
       cls: 'claude-input',
     });
     this.inputEl.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
-        this.sendMessage();
+        void this.sendMessage();
       }
     });
 
@@ -752,13 +752,13 @@ export class ChatPanelView extends ItemView {
       this.sendBtn.removeClass('claude-btn-primary');
       this.sendBtn.addClass('claude-btn-secondary');
       this.abortBtn.removeClass('claude-hidden');
-      this.inputEl.placeholder = 'Type to respond to Claude...';
+      this.inputEl.placeholder = 'Type to respond...';
     } else {
       this.sendBtn.textContent = 'Send';
       this.sendBtn.addClass('claude-btn-primary');
       this.sendBtn.removeClass('claude-btn-secondary');
       this.abortBtn.addClass('claude-hidden');
-      this.inputEl.placeholder = 'Ask Claude anything...';
+      this.inputEl.placeholder = 'Ask anything...';
     }
   }
 

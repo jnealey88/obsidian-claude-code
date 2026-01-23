@@ -72,7 +72,7 @@ export class ClaudeCodeSettingsTab extends PluginSettingTab {
     const { containerEl } = this;
     containerEl.empty();
 
-    new Setting(containerEl).setName('Claude Code').setHeading();
+    new Setting(containerEl).setName('Claude code').setHeading();
 
     // Connection Status
     void this.renderConnectionStatus(containerEl);
@@ -339,7 +339,7 @@ export class ClaudeCodeSettingsTab extends PluginSettingTab {
       const headerInfo = headerRow.createDiv();
       headerInfo.createEl('strong', { text: 'Setup required' });
       const subText = headerInfo.createDiv({ cls: 'claude-setup-subtext' });
-      subText.textContent = 'Claude Code CLI needs to be installed';
+      subText.textContent = 'Claude code CLI needs to be installed';
 
       // Setup steps
       const stepsBox = contentDiv.createDiv({ cls: 'claude-setup-steps' });

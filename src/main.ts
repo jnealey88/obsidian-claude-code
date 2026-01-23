@@ -34,20 +34,20 @@ export default class ClaudeCodePlugin extends Plugin {
     registerInlineBlockProcessor(this);
 
     // Add ribbon icon
-    this.addRibbonIcon('message-circle', 'Open Claude chat', () => {
+    this.addRibbonIcon('message-circle', 'Open AI CLI Chat', () => {
       void this.activateChatPanel();
     });
 
     // Add commands
     this.addCommand({
       id: 'open-claude-chat',
-      name: 'Open Claude chat panel',
+      name: 'Open AI CLI Chat panel',
       callback: () => void this.activateChatPanel(),
     });
 
     this.addCommand({
       id: 'ask-claude-about-selection',
-      name: 'Ask Claude about selection',
+      name: 'Ask about selection',
       editorCallback: (editor) => {
         const selection = editor.getSelection();
         if (selection) {
@@ -59,7 +59,7 @@ export default class ClaudeCodePlugin extends Plugin {
     // Confluence sync commands
     this.addCommand({
       id: 'confluence-push',
-      name: 'Confluence: push to Confluence',
+      name: 'Push to Confluence',
       callback: () => {
         void this.activateChatPanel('/confluence push');
       },
@@ -67,7 +67,7 @@ export default class ClaudeCodePlugin extends Plugin {
 
     this.addCommand({
       id: 'confluence-pull',
-      name: 'Confluence: pull from Confluence',
+      name: 'Pull from Confluence',
       callback: () => {
         void this.activateChatPanel('/confluence pull');
       },
@@ -75,7 +75,7 @@ export default class ClaudeCodePlugin extends Plugin {
 
     this.addCommand({
       id: 'confluence-status',
-      name: 'Confluence: check sync status',
+      name: 'Check Confluence sync status',
       callback: () => {
         void this.activateChatPanel('/confluence status');
       },
@@ -83,7 +83,7 @@ export default class ClaudeCodePlugin extends Plugin {
 
     this.addCommand({
       id: 'confluence-list',
-      name: 'Confluence: list all synced files',
+      name: 'List all Confluence synced files',
       callback: () => {
         void this.activateChatPanel('/confluence list');
       },

@@ -68,7 +68,7 @@ export class ContextProviderService {
 
       // Access the webview element
       const viewWithContent = view as unknown as { contentEl: HTMLElement };
-      const webviewEl = viewWithContent.contentEl?.querySelector('webview') as HTMLElement | null;
+      const webviewEl = viewWithContent.contentEl?.querySelector('webview');
 
       if (!webviewEl) return null;
 
@@ -92,7 +92,6 @@ export class ContextProviderService {
       let remote: ElectronRemote | null = null;
       try {
         // Dynamic import to avoid build errors if electron is not available
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
         const electron = window.require?.('electron') as { remote?: ElectronRemote } | undefined;
         remote = electron?.remote ?? null;
       } catch {
@@ -270,7 +269,7 @@ export class ContextProviderService {
   /**
    * Get related files via wikilinks from the current note
    */
-  async getRelatedFiles(file: TFile, maxDepth: number = 1): Promise<TFile[]> {
+  getRelatedFiles(file: TFile, maxDepth: number = 1): TFile[] {
     const { vault, metadataCache } = this.plugin.app;
     const related: Set<string> = new Set();
     const visited: Set<string> = new Set();

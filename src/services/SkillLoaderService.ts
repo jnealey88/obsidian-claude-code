@@ -245,7 +245,7 @@ export class SkillLoaderService {
       this.skills.push(BUILTIN_SKILL_CREATOR);
 
       // Load skills from configured skills folder
-      const folderSkills = await this.loadSkillsFromFolder();
+      const folderSkills = this.loadSkillsFromFolder();
 
       // Sort folder skills alphabetically by name
       folderSkills.sort((a, b) => a.name.localeCompare(b.name));
