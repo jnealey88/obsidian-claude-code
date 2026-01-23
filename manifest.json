@@ -1,9 +1,9 @@
 {
-  "id": "claude-for-obsidian",
-  "name": "Claude for Obsidian",
+  "id": "ai-cli-chat",
+  "name": "AI CLI Chat",
   "version": "1.0.0",
   "minAppVersion": "1.4.0",
-  "description": "Chat with Claude AI in your vault. Read, write, and edit notes directly.",
+  "description": "Chat with Claude Code CLI in your vault. Read, write, and edit notes directly.",
   "author": "Nealey",
   "authorUrl": "https://github.com/jnealey88",
   "fundingUrl": "https://github.com/sponsors/jnealey88",
