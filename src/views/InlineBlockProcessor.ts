@@ -1,4 +1,4 @@
-import { MarkdownPostProcessorContext, MarkdownRenderer, TFile } from 'obsidian';
+import { MarkdownPostProcessorContext, MarkdownRenderChild, MarkdownRenderer, TFile } from 'obsidian';
 import type ClaudeCodePlugin from '../main';
 import { ChatMessage } from '../types';
 
@@ -25,6 +25,7 @@ class InlineChatBlock {
   private state: InlineBlockState;
   private messagesEl: HTMLElement;
   private inputEl: HTMLInputElement;
+  private component: MarkdownRenderChild;
 
   constructor(
     plugin: ClaudeCodePlugin,
@@ -37,6 +38,9 @@ class InlineChatBlock {
     this.el = el;
     this.ctx = ctx;
     this.state = this.parseSource(source);
+    // Create a component with proper lifecycle for markdown rendering
+    this.component = new MarkdownRenderChild(el);
+    this.ctx.addChild(this.component);
   }
 
   private parseSource(source: string): InlineBlockState {
@@ -94,9 +98,9 @@ class InlineChatBlock {
       cls: 'claude-inline-input',
     });
 
-    this.inputEl.addEventListener('keydown', async (e) => {
+    this.inputEl.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') {
-        await this.sendMessage();
+        void this.sendMessage();
       }
     });
 
@@ -116,7 +120,7 @@ class InlineChatBlock {
       });
 
       const contentEl = msgEl.createDiv('claude-inline-content');
-      MarkdownRenderer.render(this.plugin.app, msg.content, contentEl, this.ctx.sourcePath, this.plugin);
+      void MarkdownRenderer.render(this.plugin.app, msg.content, contentEl, this.ctx.sourcePath, this.component);
     }
   }
 

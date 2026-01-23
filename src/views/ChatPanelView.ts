@@ -62,6 +62,7 @@ export class ChatPanelView extends ItemView {
     this.createInputArea(this.mainContentEl);
     this.setupEventListeners();
     this.initializeSession();
+    await Promise.resolve(); // Satisfy async requirement
   }
 
   private createHeader(container: HTMLElement): void {
@@ -82,7 +83,7 @@ export class ChatPanelView extends ItemView {
 
     const controls = header.createDiv('claude-header-controls');
     const newBtn = controls.createEl('button', {
-      text: '+ New',
+      text: 'New',
       cls: 'claude-btn claude-btn-secondary claude-btn-small',
     });
     newBtn.addEventListener('click', () => this.startNewSession());
@@ -241,7 +242,7 @@ export class ChatPanelView extends ItemView {
       text: 'Send',
       cls: 'claude-btn claude-btn-primary',
     });
-    this.sendBtn.addEventListener('click', () => this.sendMessage());
+    this.sendBtn.addEventListener('click', () => void this.sendMessage());
 
     this.abortBtn = btnContainer.createEl('button', {
       text: 'Stop',
@@ -307,7 +308,7 @@ export class ChatPanelView extends ItemView {
     let prompt = rawPrompt;
     let skillSystemPrompt: string | undefined;
     if (this.selectedSkill) {
-      const skillContent = await this.plugin.skillLoader.getSkillContent(this.selectedSkill);
+      const skillContent = this.plugin.skillLoader.getSkillContent(this.selectedSkill);
       if (skillContent) {
         skillSystemPrompt = skillContent;
       }
@@ -341,7 +342,7 @@ export class ChatPanelView extends ItemView {
 
       // Add vault awareness (lightweight - just paths and structure)
       if (this.includeFileContext) {
-        contextPrompt = await this.plugin.contextProvider.getVaultAwareness(true);
+        contextPrompt = this.plugin.contextProvider.getVaultAwareness(true);
       }
 
       // Add web context only if explicitly requested (this one does send content)
@@ -391,7 +392,7 @@ export class ChatPanelView extends ItemView {
         // Small delay to let UI update, then send the queued message
         setTimeout(() => {
           this.inputEl.value = queuedInput;
-          this.sendMessage();
+          void this.sendMessage();
         }, 100);
       }
     }
@@ -482,7 +483,7 @@ export class ChatPanelView extends ItemView {
     const contentEl = this.currentResponseEl?.querySelector('.claude-message-content') as HTMLElement;
     if (contentEl) {
       contentEl.empty();
-      MarkdownRenderer.render(this.plugin.app, content, contentEl, '', this.plugin);
+      void MarkdownRenderer.render(this.plugin.app, content, contentEl, '', this);
       this.accumulatedContent = content;
       this.messagesEl.scrollTop = this.messagesEl.scrollHeight;
     }
@@ -505,7 +506,7 @@ export class ChatPanelView extends ItemView {
     const contentEl = msgEl.createDiv('claude-message-content');
 
     if (message.content) {
-      MarkdownRenderer.render(this.plugin.app, message.content, contentEl, '', this.plugin);
+      void MarkdownRenderer.render(this.plugin.app, message.content, contentEl, '', this);
     }
 
     // Add copy button for assistant messages
@@ -659,8 +660,10 @@ export class ChatPanelView extends ItemView {
         return fileName;
       case 'Write':
         return fileName;
-      case 'Glob':
-        return `${input.pattern || '*'}`;
+      case 'Glob': {
+        const pattern = typeof input.pattern === 'string' ? input.pattern : '*';
+        return pattern;
+      }
       case 'Grep':
         return `"${(input.pattern as string)?.substring(0, 30) || '...'}"`;
       case 'Bash': {
@@ -678,9 +681,10 @@ export class ChatPanelView extends ItemView {
         return `"${(input.query as string)?.substring(0, 30) || '...'}"`;
       case 'Task':
         return (input.description as string)?.substring(0, 40) || 'subtask';
-      case 'TodoWrite':
+      case 'TodoWrite': {
         const todos = input.todos as Array<{ content: string }>;
         return todos ? `${todos.length} items` : 'todos';
+      }
       default:
         return '';
     }
@@ -861,19 +865,19 @@ export class ChatPanelView extends ItemView {
 
     webToggleBtn.addEventListener('click', () => {
       this.includeWebContext = !this.includeWebContext;
-      updateWebToggle();
+      void updateWebToggle();
     });
 
     // Update toggles when workspace changes
     this.registerEvent(
       this.plugin.app.workspace.on('active-leaf-change', () => {
         updateFileToggle();
-        updateWebToggle();
+        void updateWebToggle();
       })
     );
 
     updateFileToggle();
-    updateWebToggle();
+    void updateWebToggle();
   }
 
   setInitialPrompt(prompt: string): void {
@@ -887,5 +891,6 @@ export class ChatPanelView extends ItemView {
 
   async onClose(): Promise<void> {
     this.plugin.cliService.removeAllListeners();
+    await Promise.resolve(); // Satisfy async requirement
   }
 }

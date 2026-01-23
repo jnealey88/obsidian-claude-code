@@ -67,7 +67,7 @@ export class ContextProviderService {
       if (!view || !('contentEl' in view)) return null;
 
       // Access the webview element
-      const viewWithContent = view as { contentEl: HTMLElement };
+      const viewWithContent = view as unknown as { contentEl: HTMLElement };
       const webviewEl = viewWithContent.contentEl?.querySelector('webview') as HTMLElement | null;
 
       if (!webviewEl) return null;
@@ -88,10 +88,13 @@ export class ContextProviderService {
       const title = webview.getTitle?.() || url;
 
       // Try to access Electron's remote API - may not be available in all Obsidian versions
-      let remote: { webContents: { fromId: (id: number) => { executeJavaScript: (code: string, userGesture: boolean) => Promise<unknown> } | null } } | null = null;
+      type ElectronRemote = { webContents: { fromId: (id: number) => { executeJavaScript: (code: string, userGesture: boolean) => Promise<unknown> } | null } };
+      let remote: ElectronRemote | null = null;
       try {
-        // Dynamic require to avoid build errors if electron is not available
-        remote = require('electron').remote;
+        // Dynamic import to avoid build errors if electron is not available
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const electron = window.require?.('electron') as { remote?: ElectronRemote } | undefined;
+        remote = electron?.remote ?? null;
       } catch {
         console.debug('[Context Provider] Electron remote module not available');
         return null;
@@ -156,7 +159,8 @@ export class ContextProviderService {
     const files = vault.getMarkdownFiles();
     const results: VaultSearchResult[] = [];
     const queryTerms = this.extractSearchTerms(query);
-    const excludePaths = this.plugin.settings.excludeFolders;
+    // Include both user-configured exclusions and the config directory
+    const excludePaths = [...this.plugin.settings.excludeFolders, vault.configDir];
 
     for (const file of files) {
       // Skip excluded paths
@@ -271,7 +275,7 @@ export class ContextProviderService {
     const related: Set<string> = new Set();
     const visited: Set<string> = new Set();
 
-    const collectLinks = async (currentFile: TFile, depth: number) => {
+    const collectLinks = (currentFile: TFile, depth: number): void => {
       if (depth > maxDepth || visited.has(currentFile.path)) return;
       visited.add(currentFile.path);
 
@@ -319,7 +323,7 @@ export class ContextProviderService {
       }
     };
 
-    await collectLinks(file, 0);
+    collectLinks(file, 0);
 
     // Convert paths back to files
     const relatedFiles: TFile[] = [];
@@ -474,9 +478,10 @@ export class ContextProviderService {
    * Get lightweight vault awareness context - minimal info to help Claude navigate
    * without sending file contents upfront. Claude can use Read/Grep/Glob tools on demand.
    */
-  async getVaultAwareness(includeCurrentFile: boolean = true): Promise<string> {
+  getVaultAwareness(includeCurrentFile: boolean = true): string {
     const { vault } = this.plugin.app;
-    const vaultPath = (vault.adapter as any).basePath || vault.getName();
+    const adapter = vault.adapter as { basePath?: string };
+    const vaultPath = adapter.basePath || vault.getName();
 
     // Get top-level folder structure
     const rootItems = vault.getRoot().children;

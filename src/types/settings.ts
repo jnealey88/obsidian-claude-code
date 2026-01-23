@@ -32,7 +32,7 @@ export const DEFAULT_SETTINGS: ClaudeCodePluginSettings = {
   includeCurrentNote: true,
   maxContextFiles: 10,
   maxContextLength: 50000,
-  excludeFolders: ['.obsidian', '.claude-sessions', 'node_modules'],
+  excludeFolders: ['.claude-sessions', 'node_modules'],
   showToolCalls: true,
   streamResponses: true,
   defaultPanelPosition: 'right',

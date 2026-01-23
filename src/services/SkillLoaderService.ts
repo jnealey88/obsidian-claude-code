@@ -261,7 +261,7 @@ export class SkillLoaderService {
     }
   }
 
-  private async loadSkillsFromFolder(): Promise<SkillOption[]> {
+  private loadSkillsFromFolder(): SkillOption[] {
     const skills: SkillOption[] = [];
 
     try {
@@ -452,7 +452,7 @@ export class SkillLoaderService {
    * Get the content of a skill's SKILL.md file
    * Used when invoking a skill to provide instructions to Claude
    */
-  async getSkillContent(skillId: string): Promise<string | null> {
+  getSkillContent(skillId: string): string | null {
     // Handle built-in skill-creator
     if (skillId === 'skill-creator') {
       return BUILTIN_SKILL_CREATOR_CONTENT;

@@ -72,13 +72,13 @@ export class ClaudeCodeSettingsTab extends PluginSettingTab {
     const { containerEl } = this;
     containerEl.empty();
 
-    new Setting(containerEl).setName('Claude Code settings').setHeading();
+    new Setting(containerEl).setName('Claude Code').setHeading();
 
     // Connection Status
     void this.renderConnectionStatus(containerEl);
 
     // CLI Configuration
-    new Setting(containerEl).setName('CLI configuration').setHeading();
+    new Setting(containerEl).setName('CLI').setHeading();
 
     new Setting(containerEl)
       .setName('Claude CLI path')
@@ -145,7 +145,7 @@ export class ClaudeCodeSettingsTab extends PluginSettingTab {
       );
 
     // Skills Configuration
-    new Setting(containerEl).setName('Skills configuration').setHeading();
+    new Setting(containerEl).setName('Skills').setHeading();
 
     new Setting(containerEl)
       .setName('Skills folder')
@@ -170,7 +170,7 @@ export class ClaudeCodeSettingsTab extends PluginSettingTab {
     tipSmall.appendText(' command to create new skills. Skills extend Claude\'s capabilities with specialized workflows and knowledge.');
 
     // Context Settings
-    new Setting(containerEl).setName('Context settings').setHeading();
+    new Setting(containerEl).setName('Context').setHeading();
 
     new Setting(containerEl)
       .setName('Include current note')
@@ -214,7 +214,7 @@ export class ClaudeCodeSettingsTab extends PluginSettingTab {
       .setDesc('Comma-separated list of folders to exclude from context')
       .addText((text) =>
         text
-          .setPlaceholder('.obsidian,.claude-sessions')
+          .setPlaceholder('.claude-sessions,node_modules')
           .setValue(this.plugin.settings.excludeFolders.join(','))
           .onChange(async (value) => {
             this.plugin.settings.excludeFolders = value
@@ -226,7 +226,7 @@ export class ClaudeCodeSettingsTab extends PluginSettingTab {
       );
 
     // UI Preferences
-    new Setting(containerEl).setName('UI preferences').setHeading();
+    new Setting(containerEl).setName('Interface').setHeading();
 
     new Setting(containerEl)
       .setName('Show tool calls')
@@ -263,7 +263,7 @@ export class ClaudeCodeSettingsTab extends PluginSettingTab {
       );
 
     // Session Management
-    new Setting(containerEl).setName('Session management').setHeading();
+    new Setting(containerEl).setName('Sessions').setHeading();
 
     new Setting(containerEl)
       .setName('Auto-save sessions')
@@ -349,7 +349,7 @@ export class ClaudeCodeSettingsTab extends PluginSettingTab {
 
       const step1 = stepsList.createEl('li');
       step1.appendText('Install ');
-      const nodeLink = step1.createEl('a', { text: 'Node.js', href: 'https://nodejs.org', cls: 'claude-setup-link' });
+      step1.createEl('a', { text: 'Node.js', href: 'https://nodejs.org', cls: 'claude-setup-link' });
       step1.appendText(' (if not already installed)');
 
       const step2 = stepsList.createEl('li');

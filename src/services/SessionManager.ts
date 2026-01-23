@@ -124,7 +124,7 @@ export class SessionManager {
       session.updatedAt = Date.now();
 
       if (this.plugin.settings.autoSaveSessions) {
-        this.saveSession(session);
+        void this.saveSession(session);
       }
     }
   }
@@ -146,7 +146,7 @@ export class SessionManager {
       session.updatedAt = Date.now();
 
       if (this.plugin.settings.autoSaveSessions) {
-        this.saveSession(session);
+        void this.saveSession(session);
       }
     }
   }
