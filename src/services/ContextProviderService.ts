@@ -429,7 +429,7 @@ export class ContextProviderService {
         await addContext(activeFile, 'active file');
 
         // 2. Include related files from the current note (via wikilinks)
-        const relatedFiles = await this.getRelatedFiles(activeFile, 1);
+        const relatedFiles = this.getRelatedFiles(activeFile, 1);
         for (const relatedFile of relatedFiles.slice(0, 3)) {
           // Limit to 3 related files
           if (totalLength >= maxLength * 0.5) break; // Reserve space for search results

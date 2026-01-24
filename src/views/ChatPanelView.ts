@@ -42,7 +42,7 @@ export class ChatPanelView extends ItemView {
   }
 
   getDisplayText(): string {
-    return 'AI CLI Chat';
+    return 'AI CLI chat';
   }
 
   getIcon(): string {
@@ -76,7 +76,7 @@ export class ChatPanelView extends ItemView {
     setIcon(historyBtn, 'menu');
     historyBtn.addEventListener('click', () => this.toggleHistory());
 
-    leftControls.createEl('span', { text: 'AI CLI Chat', cls: 'claude-header-title' });
+    leftControls.createEl('span', { text: 'AI CLI chat', cls: 'claude-header-title' });
 
     // Message count indicator
     this.msgCountEl = leftControls.createEl('span', { cls: 'claude-msg-count' });

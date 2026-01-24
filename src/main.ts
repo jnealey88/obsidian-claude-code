@@ -25,7 +25,7 @@ export default class ClaudeCodePlugin extends Plugin {
     this.skillLoader = new SkillLoaderService(this);
 
     await this.sessionManager.initialize();
-    await this.skillLoader.loadSkills();
+    this.skillLoader.loadSkills();
 
     // Register side panel view
     this.registerView(VIEW_TYPE_CHAT_PANEL, (leaf) => new ChatPanelView(leaf, this));
@@ -34,14 +34,14 @@ export default class ClaudeCodePlugin extends Plugin {
     registerInlineBlockProcessor(this);
 
     // Add ribbon icon
-    this.addRibbonIcon('message-circle', 'Open AI CLI Chat', () => {
+    this.addRibbonIcon('message-circle', 'Open chat', () => {
       void this.activateChatPanel();
     });
 
     // Add commands
     this.addCommand({
       id: 'open-claude-chat',
-      name: 'Open AI CLI Chat panel',
+      name: 'Open chat panel',
       callback: () => void this.activateChatPanel(),
     });
 
@@ -59,7 +59,7 @@ export default class ClaudeCodePlugin extends Plugin {
     // Confluence sync commands
     this.addCommand({
       id: 'confluence-push',
-      name: 'Push to Confluence',
+      name: 'Push current note to Confluence',
       callback: () => {
         void this.activateChatPanel('/confluence push');
       },
@@ -67,7 +67,7 @@ export default class ClaudeCodePlugin extends Plugin {
 
     this.addCommand({
       id: 'confluence-pull',
-      name: 'Pull from Confluence',
+      name: 'Pull current note from Confluence',
       callback: () => {
         void this.activateChatPanel('/confluence pull');
       },
@@ -75,7 +75,7 @@ export default class ClaudeCodePlugin extends Plugin {
 
     this.addCommand({
       id: 'confluence-status',
-      name: 'Check Confluence sync status',
+      name: 'Check sync status',
       callback: () => {
         void this.activateChatPanel('/confluence status');
       },
@@ -83,7 +83,7 @@ export default class ClaudeCodePlugin extends Plugin {
 
     this.addCommand({
       id: 'confluence-list',
-      name: 'List all Confluence synced files',
+      name: 'List synced files',
       callback: () => {
         void this.activateChatPanel('/confluence list');
       },

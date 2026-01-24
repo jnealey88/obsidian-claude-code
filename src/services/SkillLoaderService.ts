@@ -234,7 +234,7 @@ export class SkillLoaderService {
     this.plugin = plugin;
   }
 
-  async loadSkills(): Promise<SkillOption[]> {
+  loadSkills(): SkillOption[] {
     try {
       // Always include General as the first option
       this.skills = [
